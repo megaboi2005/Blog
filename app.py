@@ -9,8 +9,8 @@ from flask import (
     url_for,
     session
 )
+from waitress import serve
 
-from flask_socketio import SocketIO, send
 
 
 global settings
@@ -25,7 +25,6 @@ with open("config.cfg","r") as config:
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = settings["key"]
-socketio = SocketIO(app)
 
 
 def LoadPostsAtPage(page):
@@ -85,4 +84,4 @@ def images(filename):
 
 if __name__ == '__main__':
     app.config['MAX_CONTENT_LENGTH'] = 50000000
-    socketio.run(app, debug=True)
+    serve(app,host="0.0.0.0",port=80)
