@@ -1,0 +1,84 @@
+:root {
+    --darkbackground:#18162C;
+    --foreground: #323256;
+    --light: #CFB796;
+    --elements: #474662;
+    --links: #525E95;
+}
+
+body {
+    background-color: var(--darkbackground);
+    color: var(--light);
+    font-family:monospace;
+}
+
+button {
+    background-color: var(--foreground);
+}
+
+.sidebarbutton {
+    border: none;
+    width: 80%;
+    height: 8%;
+    background-color: var(--foreground);
+    color: var(--light);
+    margin: 0 auto;
+    left: 15%;
+    position: relative;
+    border: none;
+    border-radius: 3px;
+    margin-bottom: 15px;
+    transition: 200ms;
+    text-align: left;
+}
+
+.sidebarbutton:hover {
+    transition: 1000ms;
+    background-color: var(--elements);
+    text-shadow: 0 0 5px var(--light), 0 0 10px var(--light), 0 0 15px var(--light);
+    filter: drop-shadow(10px 10px 4px var(--darkbackground));
+}
+
+.blog {
+    width: 80%;
+    left: 10%;
+    border: solid;
+    border-color: var(--foreground);
+    border-radius: 3px;
+    height: 40%;
+    overflow: scroll;
+    position: relative;
+}
+
+.blog:hover {
+    border-color: var(--elements);
+}
+
+.blog button {
+    border: none;
+    background-color: var(--darkbackground);
+    width: auto;
+    left: 0%;
+    position: relative;
+    color: var(--light);
+}
+
+.blog button:hover {
+    background-color: var(--light);
+    color: var(--darkbackground);
+}
+
+.pageturnbutton {
+    border: none;
+    background-color: var(--links);
+    width: 8%;
+    height: 10%;
+    position: fixed;
+    bottom: 0%;
+    color: var(--light);
+}
+
+.pageturnbutton:hover {
+    background-color: var(--light);
+    color: var(--darkbackground);
+}
