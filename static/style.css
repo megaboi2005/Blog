@@ -48,6 +48,7 @@ button {
     height: 40%;
     overflow: scroll;
     position: relative;
+    margin-bottom: 5%;
 }
 
 .blog:hover {

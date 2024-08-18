@@ -1,0 +1,211 @@
+body {
+    background-color: black;
+    color: white;
+    overflow-x: hidden;
+    overflow-y: hidden;
+}
+
+
+.panel {
+    position:fixed;
+    color: white;
+    background-color: black;
+    width: 100%;
+    height: 7%;
+    bottom: 0%;
+    left: 0%;
+    opacity: 80%;
+    z-index: 80;
+}
+
+.panel:hover {
+    opacity: 100%;
+}
+
+.desktop {
+    width: 100%;
+    height: 100%;
+    position: absolute;
+    background-size: 100%;
+    background-position: 0% 20%;
+    left: 0%;
+    top: 0%;
+    background-repeat: no-repeat;
+    
+}
+
+.start {
+    background-color: black;
+    border: none;
+    height: 100%;
+    width: auto;
+    color: white;
+    z-index: 0;
+}
+
+.start:hover {
+    background-color: dimgrey;
+    transition: 200ms;
+}
+
+.startmenu {
+    background-color: black;
+    width: 25%;
+    height: 50%;
+    bottom: 7%;
+    position: fixed;
+    left: 0%;
+    z-index: 99;
+}
+
+.contextmenu {
+    background-color: black;
+    width: 10%;
+    height: 20%;
+    bottom: 0px;
+    position: absolute;
+    border-color: grey;
+    border-style: solid;
+    border-width: 1px;
+    z-index: 100;
+}
+
+.contextmenu button {
+    background-color: black;
+    border: none;
+    color: white;
+    width: 100%;
+}
+
+.contextmenu button:hover {
+    background-color: dimgrey;
+}
+
+.contextmenu hr {
+    background-color: grey;
+    height: 1px;
+    border: none;
+}
+
+.window {
+    background-color: black;
+    width: 350px;
+    height: 300px;
+    position: absolute;
+    resize: both;
+    transform-style: preserve-3d;
+    transition: 0ms;
+    border-color: grey;
+    border-style: solid;
+    border-width: 1px;
+    filter: drop-shadow(5px 5px 4px black);
+}
+
+.bottomwinbar {
+    bottom: 0%;
+    border-top: 1px;
+    border-bottom: 1px;
+    border-top-style: solid;
+    border-top-color: grey;
+    border-bottom-style: solid;
+    border-bottom-color: grey;
+    position: absolute;
+    width: 100%;
+    height: 30px;
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    opacity: 80%;
+}
+
+.topwinbar {
+    top: 0%;
+    border-bottom: 1px;
+    border-bottom-style: solid;
+    border-color: grey;
+    position: absolute;
+    width: 100%;
+    height: 30px;
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    opacity: 80%;
+}
+
+.topwinbar img{
+    align-self: center;
+    width: 10px;
+}
+
+.bottomwinbar img{
+    align-self: center;
+    width: 10px;
+    right: 0px; 
+    position: absolute;
+    padding-right: 10px;
+    cursor:nw-resize;
+}
+
+.program {
+    width: 100%;
+    top: 30px;
+    height:fit-content;
+    position: relative;
+    height:calc(100% - 62px);
+    overflow-y: scroll;
+}
+
+.winbutton {
+    align-content: center;
+    height: 30px;
+    width: 30px;
+    border: none;
+    background-color: black;
+    color: white;
+} 
+
+.winbutton:hover {
+    background-color: grey;
+    transition: 200ms;
+}
+
+.dragontop {
+    width: 98.6%;
+    height: calc(100% - 60px);
+    border-style: solid;
+    border-color: white;
+    border-width: 1px;
+    position: fixed;
+    display: none;
+    transition: 200ms;
+}
+
+.dragonleft {
+    width: 50%;
+    height: calc(100% - 60px);
+    border-style: solid;
+    border-color: white;
+    border-width: 1px;
+    position: fixed;
+    display: none;
+    transition: 200ms;
+}
+
+.dragonright {
+    right: 0%;
+    width: 50%;
+    height: calc(100% - 60px);
+    border-style: solid;
+    border-color: white;
+    border-width: 1px;
+    position: fixed;
+    display: none;
+    transition: 200ms;
+}
+
+img {
+    -webkit-user-select: none; /* Safari */
+    -moz-user-select: none; /* Firefox */
+    -ms-user-select: none; /* IE 10+ */
+    user-select: none; /* Standard syntax */
+}
