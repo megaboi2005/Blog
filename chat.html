@@ -1,0 +1,63 @@
+<script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.js"></script>
+<script>
+    var socket = io.connect('http://' + document.domain + ':' + location.port);
+    
+    socket.on('message', function(data) {
+        console.log(data);
+        var packet = JSON.parse(data);
+        switch (packet["packet"]) {
+            case "message":
+                PrintUserMessage(packet["author"],packet["contents"]);
+                break;
+
+            case "systemmessage":
+                chatbox.innerHTML += packet["contents"]+"<br>"
+                break;
+        }
+        
+    });
+
+    function sendmessage() {
+        let inputter = document.getElementById("input");
+        socket.emit('message', '{"packet":"message","contents":"'+inputter.value+'"}');
+        inputter.value = "";
+    }
+
+    function sendsettings() {
+        let name = document.getElementById("username")
+        let channel = document.getElementById("channel");
+        socket.emit("message",'{"packet":"setting","name":"'+name.value+'","channel":"'+channel.value+'"}');
+    }
+
+    function PrintUserMessage(author,message) {
+        let chatbox = document.getElementById("chatbox");
+        chatbox.innerHTML += '<img src="/images/araki.jpg" style="border-radius: 360px; height: 50px; float: left; margin-right:10px;"><h2>'+author+':</h2><h2 style="left: 5%; position:absolute;">'+message+'</h2><br><br><br> '
+        chatbox.scrollTop = chatbox.scrollHeight;
+    }
+
+    document.addEventListener('keydown', (event)=> {    
+            if (event.code == "Enter") {
+                sendmessage();
+            }
+
+    });
+
+
+</script>
+
+<div class="chat" id="chatbox">
+   
+</div>
+
+<div class="chatoptions">
+    <label>name</label>
+    <input type="text" name="" id="username" maxlength="20">
+    <hr>
+    <label>channel</label>
+    <input type="text" name="" id="channel" maxlength="20">
+    <hr>
+    <button style="color: var(--brighttext);" onclick="sendsettings()">send settings</button>
+</div>
+
+<input type="text" name="text" id="input" maxlength="100" style="width: 60%; font-size: 20px; height: 20%;" class="chat">
+<button style="right: 14%; position: absolute; height: 34px; width: 15%;" onclick="sendmessage()">Send</button>

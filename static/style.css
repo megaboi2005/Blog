@@ -14,6 +14,18 @@ body {
 
 button {
     background-color: var(--foreground);
+    color: var(--light);
+    border: none;
+    border-radius: 3px;
+    margin-bottom: 15px;
+    transition: 200ms;
+}
+
+button:hover {
+    transition: 1000ms;
+    background-color: var(--elements);
+    text-shadow: 0 0 5px var(--light), 0 0 10px var(--light), 0 0 15px var(--light);
+    filter: drop-shadow(10px 10px 4px var(--darkbackground));
 }
 
 .sidebarbutton {
@@ -45,8 +57,8 @@ button {
     border: solid;
     border-color: var(--foreground);
     border-radius: 3px;
-    height: 40%;
-    overflow: scroll;
+    height: 500px;
+    overflow-y: scroll;
     position: relative;
     margin-bottom: 5%;
 }
@@ -82,4 +94,28 @@ button {
 .pageturnbutton:hover {
     background-color: var(--light);
     color: var(--darkbackground);
+}
+
+.chat {
+    width: 80%;
+    left: 3%;
+    border: solid;
+    border-color: var(--foreground);
+    border-radius: 3px;
+    height: 500px;
+    overflow-y: scroll;
+    position: relative;
+    margin-bottom: 5%;
+    top: 0%;
+}
+
+.chatoptions {
+    width: 13%;
+    border: solid;
+    border-color: var(--foreground);
+    border-radius: 3px;
+    height:98%;
+    position: fixed;
+    right: 0%;
+    top: 0%;
 }

@@ -9,6 +9,8 @@ from flask import (
     url_for,
     session
 )
+from flask_socketio import SocketIO, join_room, leave_room, rooms, send
+import eventlet
 from waitress import serve
 import json
 import re
@@ -25,7 +27,7 @@ with open("config.cfg","r") as config:
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = settings["key"]
-
+socketio = SocketIO(app, async_mode='eventlet')
 
 def LoadBlogsAtPage(page):
     postcount = int(open("blogposts/data","r").read())
@@ -61,12 +63,16 @@ def BoredPostRender(post):
     mode = 0
     modes_start = ['',"<i>"]
     modes_end = ['',"</i>"]
+    limiter = 0
     for i in postsplit:
-        if i[:8] == "https://" or i[:7] == "http://":
+        if (i[:8] == "https://" or i[:7] == "http://") and limiter < 5:
+            limiter+=1
             url = i[8:].split("/")
             match url[0]:
-                case "www.youtube.com":
+                case "www.youtube.com"|"youtube.com":
                     output += ' <iframe width="100%" height="300" src="'+"https://www.youtube.com/embed/"+url[1][8:]+'" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>'
+                case "youtu.be":
+                    output += ' <iframe width="100%" height="300" src="'+"https://www.youtube.com/embed/"+url[1]+'" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>'
                 case "x.com":
                     output += '<blockquote class="twitter-tweet" data-media-max-width="560"><p lang="en" dir="ltr">tweet</p>&mdash; user <a href="https://twitter.com/'+url[1]+'/'+url[2]+'/'+url[3]+'?ref_src=twsrc%5Etfw">Date</a></blockquote> <script async src="https://platform.twitter.com/widgets.js" charset="utf-8"></script> '
                 case "www.instagram.com":
@@ -83,7 +89,7 @@ def BoredPostRender(post):
                     
                     supported_vid_extensions = ["mp4","webm","ogg"]
                     if extension in supported_img_extensions:
-                        output += ' <img src='+i+'>'
+                        output += ' <img src='+i+' style="width:60%;">'
                     elif extension in supported_vid_extensions:
                         output += ' <video width="320" height="240" controls> <source src="'+i+'" type="video/mp4"> </video>'
                     else:
@@ -127,6 +133,70 @@ def filter(var):
         .replace(">", "&gt;")
         .strip()
     )
+
+
+Usernames = {}
+Userrooms = {}
+global usercount
+usercount = 0
+
+@socketio.on('connect')
+def handle_connect():
+    global usercount
+    print(f'Client connected: {request.sid}')
+    Usernames[request.sid] = "SomeRandomUser"+str(usercount)
+    usercount += 1
+    Userrooms[request.sid] = "main"
+    join_room("main")
+    packet = {
+        "packet":"systemmessage",
+        "contents" : Usernames[request.sid]+" joined #main"
+    }
+    send(json.dumps(packet),to=Userrooms[request.sid])
+    print(rooms())
+
+@socketio.on('disconnect')
+def handle_disconnect():
+    packet = {
+        "packet":"systemmessage",
+        "contents" : Usernames[request.sid]+" disconnected"
+    }
+    send(json.dumps(packet),to=Userrooms[request.sid])    
+    del Usernames[request.sid]
+    del Userrooms[request.sid]
+
+@socketio.on('message')
+def handle_message(data):
+    print('received message: ' + data)
+    packetget = json.loads(data)
+
+    match packetget["packet"]:
+        case "message":
+            packet = packetget
+            packet["contents"] = filter(packetget["contents"])
+            packet["author"] = Usernames[request.sid]
+            send(json.dumps(packet),to=Userrooms[request.sid])
+        case "setting":
+            if not packetget["name"] == "":
+                
+                packet = {
+                    "packet":"systemmessage",
+                    "contents" : Usernames[request.sid]+" changed their name to "+filter(packetget["name"])
+                }
+                Usernames[request.sid] = filter(packetget["name"])
+                send(json.dumps(packet),to=Userrooms[request.sid])    
+
+            if not packetget["channel"] == "":
+                leave_room(Userrooms[request.sid])
+                join_room(packetget["channel"])
+                Userrooms[request.sid] = packetget["channel"]
+                packet = {
+                    "packet":"systemmessage",
+                    "contents" : Usernames[request.sid]+" joined #"+packetget["channel"]
+                }
+                send(json.dumps(packet),to=Userrooms[request.sid])
+    #socketio.send('response from server')
+
 
 @app.errorhandler(404)
 def not_found(e):
@@ -198,6 +268,14 @@ def rules():
     with open("rules.html","r") as file:
         return GenBored(file.read())
 
+@app.route("/bored/chat")
+def boredchat():
+    with open("chat.html","r") as file:
+        return GenBored(file.read())
+
+
+
 if __name__ == '__main__':
     app.config['MAX_CONTENT_LENGTH'] = 50000000
-    serve(app,host="0.0.0.0",port=8080)
+    #serve(app,host="0.0.0.0",port=8080)
+    eventlet.wsgi.server(eventlet.listen(('0.0.0.0', 8080)), app)
