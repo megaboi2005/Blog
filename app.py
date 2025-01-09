@@ -14,7 +14,7 @@ import eventlet
 from waitress import serve
 import json
 import re
-
+import os
 
 
 
@@ -92,16 +92,16 @@ def BoredPostRender(post):
                 #case "www.twitch.tv":
                 #   output += ' <iframe src="https://clips.twitch.tv/embed?clip='+url[3]+'&parent=www.example.com" frameborder="0" allowfullscreen="true" scrolling="no" height="378" width="620"></iframe>'
                 case _:
-                    extension = i.split('.')[len(i.split('.'))-1]
-                    supported_img_extensions = ["apng","avif","gif","jpg","jpeg","jfif","pjpeg","pjp","png","svg","webp"]
+                    #extension = i.split('.')[len(i.split('.'))-1]
+                    #supported_img_extensions = ["apng","avif","gif","jpg","jpeg","jfif","pjpeg","pjp","png","svg","webp"]
 
-                    supported_vid_extensions = ["mp4","webm","ogg"]
-                    if extension in supported_img_extensions:
-                        output += ' <img src='+i+' style="width:60%;">'
-                    elif extension in supported_vid_extensions:
-                        output += ' <video width="320" height="240" controls> <source src="'+i+'" type="video/mp4"> </video>'
-                    else:
-                        output += ' <a href='+i+'>'+i+'</a>'
+                    #supported_vid_extensions = ["mp4","webm","ogg"]
+                    #if extension in supported_img_extensions:
+                    #    output += ' <img src='+i+' style="width:60%;">'
+                    #elif extension in supported_vid_extensions:
+                    #    output += ' <video width="320" height="240" controls> <source src="'+i+'" type="video/mp4"> </video>'
+                    #else:
+                    output += ' <a href='+i+'>'+i+'</a>'
 
 
 
@@ -117,10 +117,10 @@ def LoadPostsAtPage(page):
     for i in range(postcount-(page*10),postcount-(page*10)-10,-1):
         if i <= -1:
             break
-        post = open("posts/"+str(i)+".json","r")
+        post = open("posts/"+str(i)+"/post.json","r")
         postjson = json.loads(post.read())
 
-        output += "<div class=\"blog\"><h1>Allegedly from: "+postjson["name"]+"</h1><hr><h3>\""+postjson["title"]+"\"</h3><p style=\"text-align:center;\">"+BoredPostRender(postjson["post"])+"</p>\n</div>\n"
+        output += "<div class=\"blog\" style=\"overflow:hidden;\"><div style=\"height:calc(100% - 70px);overflow-y: scroll;\"><h1>Allegedly from: "+postjson["name"]+"</h1><hr><h3>\""+postjson["title"]+"\"</h3><p style=\"text-align:center;\">"+BoredPostRender(postjson["post"])+"</p></div><hr><div style=\"height:50px;\"><a href=\""+"/bored/comments/"+str(i)+"\"><button style=\"font-size: 50px;width: fit-content;float:left;\">🗨</button></a></div>\n</div>\n"
     if not page == 0: 
         output += "<a href=\"/bored/posts/"+str(page-1)+"\"><button class=\"pageturnbutton\" style=\"left:20%;bottom:0%;\">Last Page</button></a>"
 
@@ -128,6 +128,40 @@ def LoadPostsAtPage(page):
 
     return output
 
+def LoadCommentsAtPage(page):
+    postcount = int(open("posts/"+str(page)+"/comments/data","r").read())
+    output = ""
+    post = open("posts/"+str(page)+"/post.json","r")
+    postjson = json.loads(post.read())
+    output += "<div class=\"blog\" style=\"overflow:hidden;\"><div style=\"height:calc(100% - 70px);overflow-y: scroll;\"><h1>Allegedly from: "+postjson["name"]+"</h1><hr><h3>\""+postjson["title"]+"\"</h3><p style=\"text-align:center;\">"+BoredPostRender(postjson["post"])+"</p></div><hr>\n</div>\n"
+    output += """
+    <form method="POST" action="/bored/api/makecomment">
+    <div class="bubble bubble-bottom-left">
+        <h1>Read <a href="/bored/rules">Rules</a> before posting nerds</h1>
+        <label for="comment">comment:</label><br>
+        <textarea style="resize: vertical; width: 80%;" rows=10 maxlength="6000" name="comment" required id="contentfield"></textarea><br>
+        <input type="submit" name="post" value="Post">
+        </div>
+        <br>
+        <label for="name">Allegedly from:</label><br>
+        <input type="text" class="input-field" id="username" name="name" required><br>
+        <input type="text" class="input-field" id="postid" name="postid" style="display:none;" required value="^value^">
+        
+        <br>
+        <br>
+    </form>
+
+
+    """.replace("^value^",str(page))
+    for i in range(postcount):
+        if i <= -1:
+            break
+        post = open("posts/"+str(page)+"/comments/"+str(postcount-i-1)+".json","r")
+        postjson = json.loads(post.read())
+        output += '<div class="bubble bubble-bottom-left">"'+postjson["post"]+'"</div><br><blockquote>'+postjson["name"]+'</blockquote><br>'
+
+    return output
+    
 def GenBored(posts):
     with open("bored.html","r") as index:
         return index.read().replace("^posts^",posts)
@@ -261,11 +295,15 @@ def boredpostmaker():
 
 @app.route("/bored/api/<req>",methods=['POST'])
 def boredAPI(req):
+    print(req)
     match req:
         case "makepost":
             if request.form.get("name",False) and request.form.get("title",False) and request.form.get("post",False):
                 data = int(open("posts/data","r").read())
-                file = open("posts/"+str(data+1)+".json","w")
+                os.mkdir("posts/"+str(data+1))
+                os.mkdir("posts/"+str(data+1)+"/comments")
+                open("posts/"+str(data+1)+"/comments/data","w").write("0")
+                file = open("posts/"+str(data+1)+"/post.json","w")
                 post = {
                     "name" : filter(request.form["name"]),
                     "title" : filter(request.form["title"]),
@@ -277,6 +315,21 @@ def boredAPI(req):
             else:
                 return redirect("/sex")
 
+        case "makecomment":
+            if request.form.get("name",False) and request.form.get("comment",False) and request.form.get("postid",False):
+                data = int(open("posts/"+request.form["postid"]+"/comments/data","r").read())
+                #os.mkdir("posts/"+str(data+1))
+                file = open("posts/"+request.form.get("postid",False)+"/comments/"+str(data)+".json","w")
+                post = {
+                    "name" : filter(request.form["name"]),
+                    "post" : filter(request.form["comment"])
+                }
+                file.write(json.dumps(post))
+                open("posts/"+request.form["postid"]+"/comments/data","w").write(str(data+1))
+                return redirect("/bored/comments/"+request.form["postid"])
+            else:
+                return redirect("/sex")
+            #return redirect("/sex")
 @app.route("/bored/rules")
 def rules():
     with open("rules.html","r") as file:
@@ -286,6 +339,19 @@ def rules():
 def boredchat():
     with open("chat.html","r") as file:
         return GenBored(file.read())
+
+@app.route("/bored/comments/<postid>")
+def boredcomments(postid):
+    return GenBored(LoadCommentsAtPage(int(postid)))
+
+@app.route("/sex")
+def sex():
+    images = os.listdir("static/sex")
+    output = ""
+    for i in images:
+        output += '<div style="height: 400px; width:20%; float:left;"><img src="static/sex/'+i+'" style="width: 100%;"></div>'
+    with open("sex.html","r") as file:
+        return GenPage("sex",file.read()+output)
 
 
 
